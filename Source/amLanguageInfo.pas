@@ -492,12 +492,32 @@ begin
 end;
 
 function LoadNewResourceModule(LocaleItem: TLanguageItem; var ModuleFilename: string): HModule; overload;
+var
+  LLangDir,
+  LTempLangDir : string;
 const
   LOAD_LIBRARY_AS_IMAGE_RESOURCE = $00000020;
-
+  OPT_LANG_DIR1 = 'lang';
+  OPT_LANG_DIR2 = 'l10n';
   function LoadResourceModule(const Filename: string; const FileType: string; var ModuleFilename: string): HModule;
   begin
-    ModuleFilename := TPath.ChangeExtension(Filename, '.'+FileType);
+    //Default Language dir, is Application Directory
+    LLangDir := TPath.GetDirectoryName(Filename);
+    LTempLangDir := TPath.Combine(LLangDir, OPT_LANG_DIR1);
+    if DirectoryExists(LTempLangDir) then
+    begin
+      LLangDir := LTempLangDir;
+    end;
+
+    LTempLangDir := TPath.Combine(LLangDir, OPT_LANG_DIR2);
+    if DirectoryExists(LTempLangDir) then
+    begin
+      LLangDir := LTempLangDir;
+    end;
+
+    // Modified Path
+    //ModuleFilename := TPath.ChangeExtension(Filename, '.'+FileType);
+    ModuleFilename := TPath.Combine(LLangDir, TPath.GetFileNameWithoutExtension(Filename)+'.'+FileType);
 
     if (not TFile.Exists(ModuleFilename)) then
       Exit(0);
